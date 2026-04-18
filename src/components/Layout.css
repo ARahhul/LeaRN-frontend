@@ -1,0 +1,13 @@
+.main-content {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+  background-color: var(--color-bg-main);
+}
+
+.page-wrapper {
+  padding: 40px;
+  min-height: 100%;
+  width: 100%;
+}
