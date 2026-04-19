@@ -9,10 +9,14 @@ function AnswerBlock({ text }) {
   const lines = text.split('\n');
 
   const renderInline = (str) => {
-    const parts = str.split(/\*\*([^*]+)\*\*/g);
-    return parts.map((part, j) =>
-      j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-    );
+    // Handle **bold** and *bold* both
+    const parts = str.split(/\*\*([^*]+)\*\*|\*([^*]+)\*/g);
+    return parts.map((part, j) => {
+      if (part === undefined) return null;
+      // Every 3rd index pattern: 0=text, 1=**match**, 2=*match*
+      if (j % 3 === 1 || j % 3 === 2) return <strong key={j}>{part}</strong>;
+      return part;
+    });
   };
 
   return (
