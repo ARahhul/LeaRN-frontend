@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Plus, Mic, ArrowUp, Settings as SettingsIcon, BookOpen, AlertCircle, Loader2, Image } from 'lucide-react';
 import './AITutor.css';
 
-const API_URL = 'http://localhost:8000/query';
-const IMAGE_BASE = 'http://localhost:8000/images';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/query';
+const IMAGE_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/images';
 
 function AnswerBlock({ text }) {
   const lines = text.split('\n');
@@ -141,7 +141,10 @@ const AITutor = () => {
       try {
         const res = await fetch('http://localhost:11434/api/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           body: JSON.stringify({
             model: 'qwen3-vl:235b-cloud',
             prompt: `Generate a short, warm, single-line greeting for a student named ${userName} who just opened their VTU exam prep dashboard.\nVary the greeting every time — sometimes say welcome back, sometimes say good morning/evening, sometimes say something motivational.\nKeep it under 10 words. Only return the greeting text, nothing else.`,
