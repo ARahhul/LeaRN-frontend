@@ -200,11 +200,21 @@ const AITutor = () => {
       }
 
       const data = await res.json();
+      
+      // Convert base64 to blob URLs
+      const blobImages = await Promise.all(
+        (data.images || []).map(async (b64) => {
+          const res = await fetch(b64);
+          const blob = await res.blob();
+          return URL.createObjectURL(blob);
+        })
+      );
+
       setMessages(prev => [...prev, {
         question: q,
         answer: data.answer,
         sources: data.sources,
-        images: data.images,
+        images: blobImages,
       }]);
     } catch (e) {
       setError(e.message || 'Could not reach the backend. Is it running?');
