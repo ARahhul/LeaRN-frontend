@@ -151,7 +151,7 @@ const AITutor = () => {
             'bypass-tunnel-reminder': 'true'
           },
           body: JSON.stringify({
-            model: 'qwen3-vl:235b-cloud',
+            model: 'minimax-m2.7b:cloud',
             prompt: `Generate a short, warm, single-line greeting for a student named ${userName} who just opened their VTU exam prep dashboard.\nVary the greeting every time — sometimes say welcome back, sometimes say good morning/evening, sometimes say something motivational.\nKeep it under 10 words. Only return the greeting text, nothing else.`,
             stream: false,
           }),
