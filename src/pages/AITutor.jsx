@@ -143,11 +143,12 @@ const AITutor = () => {
     // Returning user — fetch dynamic greeting from Ollama
     const fetchGreeting = async () => {
       try {
-        const res = await fetch('http://localhost:11434/api/generate', {
+        const res = await fetch(API_URL.replace('/query', '/generate'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
+            'ngrok-skip-browser-warning': 'true',
+            'bypass-tunnel-reminder': 'true'
           },
           body: JSON.stringify({
             model: 'qwen3-vl:235b-cloud',
