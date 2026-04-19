@@ -471,6 +471,25 @@
     margin-top: 20px;
   }
   
+  .hide-mobile {
+    display: none;
+  }
+  
+  .footer-text {
+    font-size: 0.55rem;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  
+  .footer-text span {
+    font-size: 0.55rem;
+  }
+  
+  .input-bar {
+    padding: 6px 8px;
+    border-radius: 20px;
+  }
+
   .input-container-wrapper {
     bottom: 20px;
     width: 95%;

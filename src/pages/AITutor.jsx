@@ -285,7 +285,7 @@ const AITutor = () => {
       {/* Input bar */}
       <div className="input-container-wrapper">
         <div className="input-bar">
-          <button className="btn-icon" title="Attach">
+          <button className="btn-icon hide-mobile" title="Attach">
             <Plus size={20} />
           </button>
           <input
@@ -298,7 +298,7 @@ const AITutor = () => {
             onKeyDown={handleKeyDown}
             disabled={loading}
           />
-          <button className="btn-icon" title="Voice">
+          <button className="btn-icon hide-mobile" title="Voice">
             <Mic size={20} />
           </button>
           <button
