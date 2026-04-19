@@ -272,10 +272,11 @@ const AITutor = () => {
                   {msg.images.map((img, j) => (
                     <img
                       key={j}
-                      src={`${IMAGE_BASE}/${img}`}
+                      src={`${IMAGE_BASE}/${img}?ngrok-skip-browser-warning=true`}
                       alt={`relevant-${j}`}
                       className="answer-image"
-                      onClick={() => setLightboxSrc(`${IMAGE_BASE}/${img}`)}
+                      onClick={() => setLightboxSrc(`${IMAGE_BASE}/${img}?ngrok-skip-browser-warning=true`)}
+                      onError={(e) => e.target.style.display = 'none'}
                     />
                   ))}
                 </div>
