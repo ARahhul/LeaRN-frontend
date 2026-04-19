@@ -201,33 +201,21 @@ const AITutor = () => {
 
       const data = await res.json();
 
-      // Safe image conversion - never crashes main flow
-      let blobImages = [];
-      try {
-        blobImages = (data.images || []).map((b64) => {
-          try {
-            const base64Data = b64.includes(',') ? b64.split(',')[1] : b64;
-            const cleanBase64 = base64Data.replace(/\s/g, '');
-            const binary = atob(cleanBase64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-              bytes[i] = binary.charCodeAt(i);
-            }
-            const blob = new Blob([bytes], { type: 'image/png' });
-            return URL.createObjectURL(blob);
-          } catch {
-            return null;
-          }
-        }).filter(Boolean);
-      } catch {
-        blobImages = []; // images fail silently, text still shows
-      }
+      // Use base64 data URIs directly — no blob lifecycle issues
+      const cleanImages = (data.images || []).map((b64) => {
+        try {
+          if (b64.startsWith('data:')) return b64;
+          return `data:image/png;base64,${b64}`;
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
 
       setMessages(prev => [...prev, {
         question: q,
         answer: data.answer,
         sources: data.sources,
-        images: blobImages,
+        images: cleanImages,
       }]);
     } catch (e) {
       setError(e.message || 'Could not reach the backend. Is it running?');
