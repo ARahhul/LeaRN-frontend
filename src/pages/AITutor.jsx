@@ -204,8 +204,11 @@ const AITutor = () => {
       // Use base64 data URIs directly — no blob lifecycle issues
       const cleanImages = (data.images || []).map((b64) => {
         try {
-          if (b64.startsWith('data:')) return b64;
-          return `data:image/png;base64,${b64}`;
+          const cleaned = b64.trim();
+          const raw = cleaned.includes('base64,')
+            ? cleaned.split('base64,').pop()
+            : cleaned;
+          return `data:image/webp;base64,${raw}`;
         } catch {
           return null;
         }
