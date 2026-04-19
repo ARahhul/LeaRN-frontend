@@ -3,7 +3,7 @@ import { Brain, Plus, Mic, ArrowUp, Settings as SettingsIcon, BookOpen, AlertCir
 import './AITutor.css';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/query';
-const IMAGE_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/images';
+
 
 function AnswerBlock({ text }) {
   const lines = text.split('\n');
