@@ -200,15 +200,20 @@ const AITutor = () => {
       }
 
       const data = await res.json();
-      
-      // Convert base64 to blob URLs
-      const blobImages = await Promise.all(
-        (data.images || []).map(async (b64) => {
-          const res = await fetch(b64);
-          const blob = await res.blob();
-          return URL.createObjectURL(blob);
-        })
-      );
+
+      // Convert base64 to blob URLs properly
+      const blobImages = (data.images || []).map((b64) => {
+        // b64 is already a full data URI like "data:image/png;base64,..."
+        const [header, base64Data] = b64.split(',');
+        const mime = header.match(/:(.*?);/)[1];
+        const binary = atob(base64Data);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: mime });
+        return URL.createObjectURL(blob);
+      });
 
       setMessages(prev => [...prev, {
         question: q,
