@@ -192,7 +192,10 @@
   background-color: var(--color-accent-hover);
 }
 
-.hint-section {
-  opacity: 0.5;
-  pointer-events: none;
+.save-toast {
+  font-size: 0.85rem;
+  color: #2F855A;
+  font-weight: 600;
+  margin-right: 12px;
+  animation: fadeIn 300ms ease forwards;
 }

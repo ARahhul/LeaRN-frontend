@@ -1,36 +1,40 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Library, Brain, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { FileText, Library, Brain, Settings, HelpCircle, LogOut } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = () => {
+  const [userName, setUserName] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setUserName(localStorage.getItem('user_name') || '');
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_college');
+    window.location.href = '/';
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>A</span>
+          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>L</span>
         </div>
         <div className="sidebar-title-container">
-          <div className="sidebar-title">The Atelier</div>
-          <div className="sidebar-subtitle">GRADUATE RESEARCH</div>
+          <div className="sidebar-title">LeaRN</div>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        {/* We can map over links to keep it DRY or write them out */}
-        <NavLink to="/workbench" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <LayoutDashboard className="nav-icon" />
-          WORKBENCH
-        </NavLink>
-        <NavLink to="/notes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <FileText className="nav-icon" />
-          RESEARCH NOTES
-        </NavLink>
         <NavLink to="/source-vault" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Library className="nav-icon" />
           SOURCE VAULT
         </NavLink>
-        <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Brain className="nav-icon" />
           AI TUTOR
         </NavLink>
@@ -41,12 +45,15 @@ const Sidebar = () => {
       </nav>
 
       <div className="sidebar-bottom">
-        <button className="btn-upgrade">
-          UPGRADE TO SCHOLAR
-        </button>
         <div className="bottom-links">
-          <a href="#" className="bottom-link">HELP</a>
-          <a href="#" className="bottom-link">LOGOUT</a>
+          <a href="#" className="bottom-link">
+            <HelpCircle size={14} />
+            HELP
+          </a>
+          <button className="bottom-link logout-link" onClick={handleLogout}>
+            <LogOut size={14} />
+            LOGOUT
+          </button>
         </div>
       </div>
     </aside>

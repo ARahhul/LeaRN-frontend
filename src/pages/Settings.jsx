@@ -1,72 +1,81 @@
-import React from 'react';
-import { User, Pencil } from 'lucide-react';
+import React, { useState } from 'react';
+import { User } from 'lucide-react';
 import './Settings.css';
 
 const Settings = () => {
+  const [name, setName] = useState(() => localStorage.getItem('user_name') || '');
+  const [email, setEmail] = useState(() => localStorage.getItem('user_email') || '');
+  const [college, setCollege] = useState(() => localStorage.getItem('user_college') || '');
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    localStorage.setItem('user_name', name.trim());
+    localStorage.setItem('user_email', email.trim());
+    localStorage.setItem('user_college', college.trim());
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
   return (
     <div className="settings-container fade-in">
       <div className="settings-header">
         <h1 className="settings-title">Settings</h1>
-        <p className="settings-subtitle">Manage your profile, preferences, and subscription.</p>
+        <p className="settings-subtitle">Manage your profile information.</p>
       </div>
 
       <div className="settings-content">
         <div className="settings-sidebar">
           <button className="settings-tab active">Profile Information</button>
-          <button className="settings-tab">Subscription & Usage</button>
-          <button className="settings-tab">App Preferences</button>
-          <button className="settings-tab">Security</button>
         </div>
 
         <div className="settings-main">
-          {/* Profile Section */}
           <div className="settings-section">
             <h2 className="section-heading">Profile Information</h2>
-            
+
             <div className="profile-header">
               <div className="avatar-container">
                 <User size={40} />
-                <button className="avatar-edit">
-                  <Pencil size={14} />
-                </button>
               </div>
               <div className="profile-info">
-                <h3>Dr. Elena Rostova</h3>
-                <p>elena.rostova@university.edu</p>
+                <h3>{name || 'Your Name'}</h3>
+                <p>{email || 'your@email.com'}</p>
               </div>
             </div>
 
             <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">FIRST NAME</label>
-                <input type="text" className="form-input" defaultValue="Elena" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">LAST NAME</label>
-                <input type="text" className="form-input" defaultValue="Rostova" />
+              <div className="form-group full-width">
+                <label className="form-label">FULL NAME</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
               <div className="form-group full-width">
-                <label className="form-label">INSTITUTION/AFFILIATION</label>
-                <input type="text" className="form-input" defaultValue="Department of Comparative Literature" />
+                <label className="form-label">GMAIL</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="form-group full-width">
-                <label className="form-label">RESEARCH FOCUS</label>
-                <textarea 
-                  className="form-textarea" 
-                  defaultValue="Focusing on post-modern narratives and their intersection with digital archiving methods."
+                <label className="form-label">COLLEGE / INSTITUTION</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
                 />
               </div>
             </div>
-            
-            <div className="form-actions">
-              <button className="btn-save">Save Changes</button>
-            </div>
-          </div>
 
-          {/* Subscription Section (Hint) */}
-          <div className="settings-section hint-section">
-            <h2 className="section-heading">Subscription & Usage</h2>
-            {/* Scroll hint content could go here, but for now just the heading to match design */}
+            <div className="form-actions">
+              {saved && <span className="save-toast">✓ Saved</span>}
+              <button className="btn-save" onClick={handleSave}>Save Changes</button>
+            </div>
           </div>
         </div>
       </div>
