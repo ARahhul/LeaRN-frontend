@@ -129,6 +129,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .images-group-label {
@@ -142,13 +143,11 @@
 .answer-image {
   width: 100%;
   height: auto;
-  min-height: 80px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  object-fit: cover;
+  min-height: 100px;
   display: block;
+  border-radius: 8px;
+  object-fit: contain;
   background: #eee;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 /* ── Response card ───────────────────────────────────────────────────────── */
