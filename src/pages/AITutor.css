@@ -456,3 +456,44 @@
 .answer-image {
   cursor: zoom-in;
 }
+
+/* ── Mobile Responsiveness ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .messages-feed-wrapper {
+    flex-direction: column;
+  }
+  
+  .images-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    padding-left: 0;
+    margin-top: 20px;
+  }
+  
+  .input-container-wrapper {
+    bottom: 20px;
+    width: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .response-card {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+  
+  .response-answer {
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+  
+  .messages-feed {
+    padding-bottom: 120px;
+    width: 100%;
+  }
+
+  .ai-heading {
+    font-size: 1.8rem;
+  }
+}
