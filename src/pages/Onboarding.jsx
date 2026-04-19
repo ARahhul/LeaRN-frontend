@@ -8,7 +8,7 @@ const Onboarding = ({ onComplete }) => {
   const [college, setCollege] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !college.trim()) {
       setError('Please fill in all fields.');
@@ -21,6 +21,22 @@ const Onboarding = ({ onComplete }) => {
     localStorage.setItem('user_name', name.trim());
     localStorage.setItem('user_email', email.trim());
     localStorage.setItem('user_college', college.trim());
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      await fetch(`${API_URL}/onboard`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          college: college.trim()
+        })
+      });
+    } catch (err) {
+      console.error('Failed to save onboard data to backend:', err);
+    }
+
     onComplete();
   };
 
