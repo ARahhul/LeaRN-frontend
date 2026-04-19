@@ -304,6 +304,8 @@ const AITutor = () => {
                       alt={`relevant-${j}`}
                       className="answer-image"
                       onClick={() => setLightboxSrc(img)}
+                      onError={(e) => console.error('IMG FAILED:', e.target.src.substring(0, 50))}
+                      onLoad={() => console.log('IMG LOADED OK')}
                     />
                   ))}
                 </div>
