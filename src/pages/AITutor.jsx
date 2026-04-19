@@ -21,9 +21,10 @@ function AnswerBlock({ text }) {
         const trimmed = line.trim();
         if (!trimmed) return <div key={i} className="answer-spacer" />;
 
-        if (/^#{1,3}\s/.test(trimmed)) {
-          const clean = trimmed.replace(/^#{1,3}\s/, '');
-          return <p key={i} className="answer-section-heading">{renderInline(clean)}</p>;
+        if (/^#{1,6}\s/.test(trimmed)) {
+          const clean = trimmed.replace(/^#{1,6}\s/, '');
+          const level = trimmed.match(/^#+/)[0].length;
+          return <p key={i} className={`answer-section-heading level-${level}`}>{renderInline(clean)}</p>;
         }
 
         if (/^\*\*[^*]+\*\*[:\s]?$/.test(trimmed)) {
