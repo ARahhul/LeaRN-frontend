@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Plus, Mic, ArrowUp, Settings as SettingsIcon, BookOpen, AlertCircle, Loader2, Image } from 'lucide-react';
 import './AITutor.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_URL = API_BASE + '/query';
-const STREAM_URL = API_BASE + '/query/stream';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/query';
 
 
 function AnswerBlock({ text }) {
@@ -124,8 +122,6 @@ const AITutor = () => {
   const [subject, setSubject] = useState('');
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [streamingAnswer, setStreamingAnswer] = useState('');
-  const [streamingQuestion, setStreamingQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
@@ -152,7 +148,7 @@ const AITutor = () => {
     // Returning user — fetch dynamic greeting from Ollama
     const fetchGreeting = async () => {
       try {
-        const res = await fetch(API_BASE + '/generate', {
+        const res = await fetch(API_URL.replace('/query', '/generate'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -179,10 +175,10 @@ const AITutor = () => {
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0 || streamingAnswer) {
+    if (messages.length > 0) {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, loading, streamingAnswer]);
+  }, [messages, loading]);
 
   const handleSubmit = async () => {
     const q = question.trim();
@@ -191,14 +187,11 @@ const AITutor = () => {
     setLoading(true);
     setError(null);
     setQuestion('');
-    setStreamingAnswer('');
-    setStreamingQuestion(q);
 
     const startTime = Date.now();
 
     try {
-      // Try streaming endpoint first
-      const res = await fetch(STREAM_URL, {
+      const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -213,39 +206,10 @@ const AITutor = () => {
         throw new Error(err.detail || `Server error ${res.status}`);
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullAnswer = '';
-      let finalMeta = null;
+      const data = await res.json();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split('\n');
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          try {
-            const payload = JSON.parse(line.slice(6));
-            if (payload.type === 'token') {
-              fullAnswer += payload.content;
-              setStreamingAnswer(fullAnswer);
-            } else if (payload.type === 'done') {
-              finalMeta = payload;
-            }
-          } catch {
-            // skip invalid JSON lines
-          }
-        }
-      }
-
-      const duration = finalMeta?.time
-        ? String(finalMeta.time)
-        : ((Date.now() - startTime) / 1000).toFixed(1);
-
-      const cleanImages = (finalMeta?.images || []).map((b64) => {
+      // Use base64 data URIs directly — no blob lifecycle issues
+      const cleanImages = (data.images || []).map((b64) => {
         try {
           const cleaned = b64.trim();
           const raw = cleaned.includes('base64,')
@@ -257,12 +221,12 @@ const AITutor = () => {
         }
       }).filter(Boolean);
 
-      setStreamingAnswer('');
-      setStreamingQuestion('');
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
       setMessages(prev => [...prev, {
         question: q,
-        answer: fullAnswer,
-        sources: finalMeta?.sources || [],
+        answer: data.answer,
+        sources: data.sources,
         images: cleanImages,
         subject: subject || 'All',
         timeTaken: duration,
@@ -278,8 +242,6 @@ const AITutor = () => {
       });
       localStorage.setItem('query_log', JSON.stringify(queryLog));
     } catch (e) {
-      setStreamingAnswer('');
-      setStreamingQuestion('');
       setError(e.message || 'Could not reach the backend. Is it running?');
     } finally {
       setLoading(false);
@@ -294,7 +256,7 @@ const AITutor = () => {
     }
   };
 
-  const hasMessages = messages.length > 0 || loading || error || streamingAnswer;
+  const hasMessages = messages.length > 0 || loading || error;
   const allImages = messages.filter(m => m.images && m.images.length > 0);
 
   return (
@@ -320,30 +282,10 @@ const AITutor = () => {
             {messages.map((msg, i) => (
               <ResponseCard key={i} message={msg} />
             ))}
-            {/* Live streaming card — shows tokens as they arrive */}
-            {streamingAnswer && (
-              <div className="response-card fade-in streaming-card">
-                <div className="response-question">
-                  <span className="response-question-label">Q</span>
-                  <span>{streamingQuestion}</span>
-                </div>
-                <div className="response-meta">
-                  <span className="response-subject">{subject || 'All'}</span>
-                  <span className="response-time"><Loader2 size={12} className="spin" /> streaming…</span>
-                </div>
-                <div className="response-answer">
-                  <div className="response-answer-header">
-                    <Brain size={16} />
-                    <span>VTU Model Answer</span>
-                  </div>
-                  <AnswerBlock text={streamingAnswer} />
-                </div>
-              </div>
-            )}
-            {loading && !streamingAnswer && (
+            {loading && (
               <div className="loading-card fade-in">
                 <Loader2 size={18} className="spin" />
-                <span>Retrieving context from notes…</span>
+                <span>Generating your VTU model answer…</span>
               </div>
             )}
             {error && (

@@ -302,19 +302,6 @@
   color: #C53030;
 }
 
-/* ── Streaming card ──────────────────────────────────────────────────────── */
-.streaming-card {
-  border-color: var(--color-accent);
-  box-shadow: 0 2px 16px rgba(216, 90, 48, 0.12);
-}
-
-.streaming-card .response-time {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--color-accent);
-}
-
 /* ── Subject selector ────────────────────────────────────────────────────── */
 .subject-select {
   border: none;
