@@ -198,7 +198,7 @@ const AITutor = () => {
           'ngrok-skip-browser-warning': 'true',
           'bypass-tunnel-reminder': 'true'
         },
-        body: JSON.stringify({ question: q, subject: subject || null }),
+        body: JSON.stringify({ question: q, subject: subject || null, user_name: userName }),
       });
 
       if (!res.ok) {
