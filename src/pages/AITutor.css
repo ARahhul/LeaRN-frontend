@@ -302,6 +302,47 @@
   color: #C53030;
 }
 
+/* ── Subject selector ────────────────────────────────────────────────────── */
+.subject-select {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  padding: 4px 8px;
+  border-right: 1px solid var(--color-border);
+  cursor: pointer;
+  outline: none;
+  min-width: 100px;
+}
+
+.subject-select:focus {
+  color: var(--color-accent);
+}
+
+/* ── Response meta ───────────────────────────────────────────────────────── */
+.response-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 20px;
+  background: var(--color-bg-sidebar);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.response-subject {
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.04em;
+}
+
+.response-time {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
 /* ── Input bar ───────────────────────────────────────────────────────────── */
 .input-container-wrapper {
   position: absolute;

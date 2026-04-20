@@ -89,6 +89,10 @@ function ResponseCard({ message }) {
         <span className="response-question-label">Q</span>
         <span>{message.question}</span>
       </div>
+      <div className="response-meta">
+        <span className="response-subject">{message.subject}</span>
+        <span className="response-time">⏱ {message.timeTaken}s</span>
+      </div>
       <div className="response-answer">
         <div className="response-answer-header">
           <Brain size={16} />
@@ -115,6 +119,7 @@ function ResponseCard({ message }) {
 
 const AITutor = () => {
   const [question, setQuestion] = useState('');
+  const [subject, setSubject] = useState('');
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -151,7 +156,7 @@ const AITutor = () => {
             'bypass-tunnel-reminder': 'true'
           },
           body: JSON.stringify({
-            model: 'qwen3-vl:235b-cloud',
+            model: 'glm-5:cloud',
             prompt: `Generate a short, warm, single-line greeting for a student named ${userName} who just opened their VTU exam prep dashboard.\nVary the greeting every time — sometimes say welcome back, sometimes say good morning/evening, sometimes say something motivational.\nKeep it under 10 words. Only return the greeting text, nothing else.`,
             stream: false,
           }),
@@ -183,6 +188,8 @@ const AITutor = () => {
     setError(null);
     setQuestion('');
 
+    const startTime = Date.now();
+
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
@@ -191,7 +198,7 @@ const AITutor = () => {
           'ngrok-skip-browser-warning': 'true',
           'bypass-tunnel-reminder': 'true'
         },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, subject: subject || null }),
       });
 
       if (!res.ok) {
@@ -214,12 +221,26 @@ const AITutor = () => {
         }
       }).filter(Boolean);
 
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
       setMessages(prev => [...prev, {
         question: q,
         answer: data.answer,
         sources: data.sources,
         images: cleanImages,
+        subject: subject || 'All',
+        timeTaken: duration,
       }]);
+
+      // Save query data to localStorage
+      const queryLog = JSON.parse(localStorage.getItem('query_log') || '[]');
+      queryLog.push({
+        question: q,
+        subject: subject || 'All',
+        timeTaken: duration,
+        timestamp: new Date().toISOString(),
+      });
+      localStorage.setItem('query_log', JSON.stringify(queryLog));
     } catch (e) {
       setError(e.message || 'Could not reach the backend. Is it running?');
     } finally {
@@ -310,9 +331,20 @@ const AITutor = () => {
       {/* Input bar */}
       <div className="input-container-wrapper">
         <div className="input-bar">
-          <button className="btn-icon hide-mobile" title="Attach">
-            <Plus size={20} />
-          </button>
+          <select
+            className="subject-select"
+            value={subject}
+            onChange={e => setSubject(e.target.value)}
+            disabled={loading}
+          >
+            <option value="">All Subjects</option>
+            <option value="BCS401">BCS401</option>
+            <option value="BCS403">BCS403</option>
+            <option value="BCS405A">BCS405A</option>
+            <option value="BBOC407">BBOC407</option>
+            <option value="BUHK408">BUHK408</option>
+            <option value="BAD401">BAD401</option>
+          </select>
           <input
             ref={inputRef}
             type="text"
