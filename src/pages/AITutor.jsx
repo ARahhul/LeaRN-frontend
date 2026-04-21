@@ -345,11 +345,14 @@ const AITutor = () => {
             <option value="BUHK408">BUHK408</option>
             <option value="BAD401">BAD401</option>
           </select>
+          <button className="btn-icon" title="Upload" aria-label="Upload">
+            <Plus size={20} />
+          </button>
           <input
             ref={inputRef}
             type="text"
             className="ai-input"
-            placeholder="Ask a VTU question… (e.g. Explain ACID properties 10 marks)"
+            placeholder="Ask a VTU question (e.g. ACID properties)"
             value={question}
             onChange={e => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
