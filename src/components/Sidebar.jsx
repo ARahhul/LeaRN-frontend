@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Library, Brain, Settings, HelpCircle, LogOut, Menu, X } from 'lucide-react';
+import { Library, Brain, Settings, HelpCircle, LogOut, Menu, X, Moon, Sun, History, LayoutDashboard, Award, FileText, Notebook } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ toggleTheme, theme }) => {
   const [userName, setUserName] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -51,6 +51,26 @@ const Sidebar = () => {
             <Brain className="nav-icon" />
             AI TUTOR
           </NavLink>
+          <NavLink to="/history" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <History className="nav-icon" />
+            HISTORY
+          </NavLink>
+          <NavLink to="/analytics" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <LayoutDashboard className="nav-icon" />
+            ANALYTICS
+          </NavLink>
+          <NavLink to="/exam-mode" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Award className="nav-icon" />
+            EXAM MODE
+          </NavLink>
+          <NavLink to="/batch-mode" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <FileText className="nav-icon" />
+            BATCH MODE
+          </NavLink>
+          <NavLink to="/notes" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Notebook className="nav-icon" />
+            NOTES
+          </NavLink>
           <NavLink to="/settings" onClick={closeSidebar} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Settings className="nav-icon" />
             SETTINGS
@@ -58,6 +78,14 @@ const Sidebar = () => {
         </nav>
 
         <div className="sidebar-bottom">
+          <button
+            className="bottom-link theme-toggle"
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            {theme === 'light' ? 'DARK MODE' : 'LIGHT MODE'}
+          </button>
           <div className="bottom-links">
             <a href="#" className="bottom-link">
               <HelpCircle size={14} />

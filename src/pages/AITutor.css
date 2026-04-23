@@ -248,6 +248,44 @@
   background-color: rgba(245, 240, 232, 0.5);
 }
 
+.response-related {
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-border);
+  background-color: rgba(222, 115, 86, 0.02);
+}
+
+.related-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.related-item {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.related-item:hover {
+  border-color: var(--color-accent);
+  background: rgba(222, 115, 86, 0.05);
+  color: var(--color-accent);
+}
+
 .sources-label {
   font-size: 0.7rem;
   font-weight: 700;
@@ -504,8 +542,23 @@
 
 /* .answer-image cursor merged into the main rule above */
 
+.answer-table-row {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.answer-table-cell {
+  flex: 1;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
 /* ── Mobile Responsiveness ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+
   .messages-feed-wrapper {
     flex-direction: column;
   }
@@ -594,4 +647,96 @@
   .ai-heading {
     font-size: 1.8rem;
   }
+}
+
+.response-question-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.download-pdf-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all 0.2s ease;
+}
+
+.download-pdf-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(222, 115, 86, 0.05);
+}
+
+/* ── Rating Stars ─────────────────────────────────────────────────────────── */
+.response-rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-border);
+  background: rgba(245, 240, 232, 0.3);
+  border-radius: 0 0 16px 16px;
+}
+
+.rating-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-stars .star {
+  font-size: 1.3rem;
+  color: var(--color-border);
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+  user-select: none;
+  line-height: 1;
+}
+
+.rating-stars .star:hover {
+  color: #f0a500;
+  transform: scale(1.2);
+}
+
+.rating-stars .star.active {
+  color: #f0a500;
+}
+
+/* ── Marks / Confidence Badges ────────────────────────────────────────────── */
+.response-marks-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(222, 115, 86, 0.12);
+  color: var(--color-accent);
+  letter-spacing: 0.03em;
+}
+
+.response-confidence-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+  letter-spacing: 0.03em;
+}
+
+.response-confidence-badge.low {
+  background: rgba(244, 67, 54, 0.1);
+  color: #c62828;
 }

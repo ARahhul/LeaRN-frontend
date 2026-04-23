@@ -15,6 +15,16 @@
   --font-sans: 'Inter', sans-serif;
 }
 
+[data-theme='dark'] {
+  --color-bg-main: #121212;
+  --color-bg-sidebar: #1E1E1E;
+  --color-accent: #E57373;
+  --color-accent-hover: #C62828;
+  --color-text-primary: #E0E0E0;
+  --color-text-muted: #A0A0A0;
+  --color-border: #333333;
+}
+
 * {
   box-sizing: border-box;
   max-width: 100%;

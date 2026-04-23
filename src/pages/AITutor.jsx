@@ -1,19 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, Plus, Mic, ArrowUp, Settings as SettingsIcon, BookOpen, AlertCircle, Loader2, Image } from 'lucide-react';
+import { Brain, Plus, Mic, ArrowUp, Settings as SettingsIcon, BookOpen, AlertCircle, Loader2, Image, Download } from 'lucide-react';
+import { useToast } from '../components/ToastContext';
 import './AITutor.css';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/query';
 
-
 function AnswerBlock({ text }) {
-  const lines = text.split('\n');
+  // Clean raw symbols before rendering
+  const cleaned = text
+    .replace(/---/g, '')                          // remove horizontal rules
+    .replace(/\$\\rightarrow\$/g, '→')            // LaTeX arrow to unicode
+    .replace(/\$\\Rightarrow\$/g, '⇒')            // LaTeX double arrow
+    .replace(/\\\$/g, '₹')                        // escaped dollar to rupee
+    .replace(/\$([^$]+)\$/g, '$1')                // strip remaining LaTeX $ wrappers
+    .replace(/\\rightarrow/g, '→')                // bare rightarrow
+    .replace(/\\Rightarrow/g, '⇒')               // bare Rightarrow
+    .replace(/\\_/g, '_')                         // escaped underscore
+    .replace(/\\textbf\{([^}]+)\}/g, '$1')        // LaTeX bold
+    .replace(/\\text\{([^}]+)\}/g, '$1')          // LaTeX text
+    .trim();
+
+  const lines = cleaned.split('\n');
 
   const renderInline = (str) => {
-    // Handle **bold** and *bold* both
     const parts = str.split(/\*\*([^*]+)\*\*|\*([^*]+)\*/g);
     return parts.map((part, j) => {
       if (part === undefined) return null;
-      // Every 3rd index pattern: 0=text, 1=**match**, 2=*match*
       if (j % 3 === 1 || j % 3 === 2) return <strong key={j}>{part}</strong>;
       return part;
     });
@@ -34,6 +46,21 @@ function AnswerBlock({ text }) {
         if (/^\*\*[^*]+\*\*[:\s]?$/.test(trimmed)) {
           const clean = trimmed.replace(/\*\*/g, '');
           return <p key={i} className="answer-section-heading">{clean}</p>;
+        }
+
+        // Skip table separator lines like | :--- | :--- |
+        if (/^\|[\s:|-]+\|/.test(trimmed)) return null;
+
+        // Render table rows as styled paragraphs
+        if (/^\|.+\|$/.test(trimmed)) {
+          const cells = trimmed.split('|').filter(s => s.trim() !== '');
+          return (
+            <div key={i} className="answer-table-row">
+              {cells.map((cell, ci) => (
+                <span key={ci} className="answer-table-cell">{renderInline(cell.trim())}</span>
+              ))}
+            </div>
+          );
         }
 
         if (/^[-•*]\s/.test(trimmed)) {
@@ -82,12 +109,63 @@ function Lightbox({ src, onClose }) {
   );
 }
 
-function ResponseCard({ message }) {
+function ResponseCard({ message, onRelatedClick }) {
+  const [rating, setRating] = useState(0);
+  const [feedbackSent, setFeedbackSent] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const ratings = JSON.parse(localStorage.getItem('answer_ratings') || '{}');
+    if (message.id && ratings[message.id]) {
+      setRating(ratings[message.id]);
+      setFeedbackSent(true);
+    }
+  }, [message.id]);
+
+  const handleRating = (val) => {
+    setRating(val);
+    setFeedbackSent(true);
+    const ratings = JSON.parse(localStorage.getItem('answer_ratings') || '{}');
+    if (message.id) {
+      ratings[message.id] = val;
+      localStorage.setItem('answer_ratings', JSON.stringify(ratings));
+    }
+  };
+
+  const downloadPDF = async () => {
+    if (!cardRef.current) return;
+    try {
+      const text = message.answer || '';
+      const blob = new Blob([`Question: ${message.question}\n\nAnswer:\n${text}`], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VTU_Answer_${message.id || 'export'}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to export:', e);
+    }
+  };
+
   return (
-    <div className="response-card fade-in">
+    <div className="response-card fade-in" ref={cardRef}>
       <div className="response-question">
         <span className="response-question-label">Q</span>
         <span>{message.question}</span>
+        <div className="response-question-badges">
+          {message.marks && (
+            <span className="response-marks-badge">{message.marks}</span>
+          )}
+          {message.confidence !== undefined && (
+            <span className={`response-confidence-badge ${message.confidence < 50 ? 'low' : ''}`}>
+              Confidence: {Math.round(message.confidence)}%
+            </span>
+          )}
+          <button className="download-pdf-btn" onClick={downloadPDF} title="Download as PDF">
+            <Download size={14} />
+          </button>
+        </div>
       </div>
       <div className="response-meta">
         <span className="response-subject">{message.subject}</span>
@@ -113,6 +191,32 @@ function ResponseCard({ message }) {
           </div>
         </div>
       )}
+      {message.related && message.related.length > 0 && (
+        <div className="response-related">
+          <div className="related-label">Related PYQs</div>
+          <div className="related-list">
+            {message.related.map((rel, i) => (
+              <div key={i} className="related-item" onClick={() => onRelatedClick(rel)}>
+                {rel}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="response-rating">
+        <span className="rating-label">Was this helpful?</span>
+        <div className="rating-stars">
+          {[1, 2, 3, 4, 5].map(star => (
+            <span
+              key={star}
+              className={`star ${rating >= star ? 'active' : ''}`}
+              onClick={() => handleRating(star)}
+            >
+              ★
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -140,17 +244,15 @@ const AITutor = () => {
     const isReturning = localStorage.getItem('returning_user');
 
     if (!isReturning) {
-      // First time user — show the static greeting, then mark as returning
       localStorage.setItem('returning_user', 'true');
       return;
     }
 
-    // Returning user — fetch dynamic greeting from Ollama
     const fetchGreeting = async () => {
       try {
         const res = await fetch(API_URL.replace('/query', '/generate'), {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': 'true',
             'bypass-tunnel-reminder': 'true'
@@ -172,6 +274,14 @@ const AITutor = () => {
     };
 
     fetchGreeting();
+
+    const lastQuery = localStorage.getItem('last_clicked_query');
+    if (lastQuery) {
+      const { question: q, subject: s } = JSON.parse(lastQuery);
+      setQuestion(q);
+      setSubject(s);
+      localStorage.removeItem('last_clicked_query');
+    }
   }, []);
 
   useEffect(() => {
@@ -191,9 +301,11 @@ const AITutor = () => {
     const startTime = Date.now();
 
     try {
-      const res = await fetch(API_URL, {
+      // Use the NEW streaming endpoint
+      const streamUrl = API_URL.replace('/query', '/query/stream');
+      const response = await fetch(streamUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
           'bypass-tunnel-reminder': 'true'
@@ -201,52 +313,122 @@ const AITutor = () => {
         body: JSON.stringify({ question: q, subject: subject || null, user_name: userName }),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Server error ${res.status}`);
+      if (!response.ok) {
+        throw new Error(`Server error ${response.status}`);
       }
 
-      const data = await res.json();
-
-      // Use base64 data URIs directly — no blob lifecycle issues
-      const cleanImages = (data.images || []).map((b64) => {
-        try {
-          const cleaned = b64.trim();
-          const raw = cleaned.includes('base64,')
-            ? cleaned.split('base64,').pop()
-            : cleaned;
-          return `data:image/webp;base64,${raw}`;
-        } catch {
-          return null;
-        }
-      }).filter(Boolean);
-
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-
+      // Prepare a new message object for streaming
+      const newMsgId = Date.now();
       setMessages(prev => [...prev, {
+        id: newMsgId,
         question: q,
-        answer: data.answer,
-        sources: data.sources,
-        images: cleanImages,
+        answer: '',
+        sources: [],
+        images: [],
         subject: subject || 'All',
-        timeTaken: duration,
+        timeTaken: '...',
+        marks: null,
       }]);
 
-      // Save query data to localStorage
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedAnswer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n\n');
+
+        for (const line of lines) {
+          if (!line.trim() || line.trim() === 'data: [DONE]') continue;
+
+          if (line.startsWith('data: ')) {
+            const dataStr = line.substring(6);
+            try {
+              const parsed = JSON.parse(dataStr);
+
+              if (parsed.chunk) {
+                accumulatedAnswer += parsed.chunk;
+                setMessages(prev => prev.map(m =>
+                  m.id === newMsgId ? { ...m, answer: accumulatedAnswer } : m
+                ));
+              } else if (parsed.sources) {
+                setMessages(prev => prev.map(m =>
+                  m.id === newMsgId ? {
+                    ...m,
+                    sources: parsed.sources,
+                    images: (parsed.images || []).map(imgPath => `${import.meta.env.VITE_API_URL}/images/${imgPath}?ngrok-skip-browser-warning=true`),
+                    marks: parsed.marks,
+                    confidence: parsed.confidence,
+                    related: parsed.related
+                  } : m
+                ));
+              }
+            } catch (e) {
+              console.error('Error parsing stream chunk:', e, dataStr);
+            }
+          }
+        }
+      }
+
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      setMessages(prev => prev.map(m =>
+        m.id === newMsgId ? { ...m, timeTaken: duration } : m
+      ));
+
+      // Save to query_log
       const queryLog = JSON.parse(localStorage.getItem('query_log') || '[]');
       queryLog.push({
         question: q,
         subject: subject || 'All',
         timeTaken: duration,
+        answer: accumulatedAnswer,
         timestamp: new Date().toISOString(),
       });
       localStorage.setItem('query_log', JSON.stringify(queryLog));
+
+
     } catch (e) {
-      setError(e.message || 'Could not reach the backend. Is it running?');
+      setError(e.message || 'Could not reach the backend.');
     } finally {
       setLoading(false);
       inputRef.current?.focus();
     }
+  };
+
+  const startVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setLoading(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuestion(transcript);
+      setLoading(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Voice input error:', event.error);
+      setLoading(false);
+    };
+
+    recognition.onend = () => {
+      setLoading(false);
+    };
+
+    recognition.start();
   };
 
   const handleKeyDown = (e) => {
@@ -277,10 +459,16 @@ const AITutor = () => {
       {hasMessages && (
         <div className="messages-feed-wrapper">
 
-          {/* LEFT: chat */}
           <div className="messages-feed">
             {messages.map((msg, i) => (
-              <ResponseCard key={i} message={msg} />
+              <ResponseCard
+                key={msg.id || i}
+                message={msg}
+                onRelatedClick={(q) => {
+                  setQuestion(q);
+                  handleSubmit();
+                }}
+              />
             ))}
             {loading && (
               <div className="loading-card fade-in">
@@ -297,7 +485,6 @@ const AITutor = () => {
             <div ref={bottomRef} />
           </div>
 
-          {/* RIGHT: images panel */}
           <div className="images-panel">
             <div className="images-panel-header">
               <Image size={13} />
@@ -328,7 +515,6 @@ const AITutor = () => {
         </div>
       )}
 
-      {/* Input bar */}
       <div className="input-container-wrapper">
         <div className="input-bar">
           <select
@@ -358,7 +544,12 @@ const AITutor = () => {
             onKeyDown={handleKeyDown}
             disabled={loading}
           />
-          <button className="btn-icon hide-mobile" title="Voice">
+          <button
+            className="btn-icon hide-mobile"
+            title="Voice"
+            onClick={startVoiceInput}
+            disabled={loading}
+          >
             <Mic size={20} />
           </button>
           <button
@@ -376,7 +567,6 @@ const AITutor = () => {
         </div>
       </div>
 
-      {/* Lightbox */}
       {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
     </div>
   );
