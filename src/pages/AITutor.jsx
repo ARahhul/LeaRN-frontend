@@ -230,6 +230,8 @@ const AITutor = () => {
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
   const bottomRef = useRef(null);
+  const feedRef = useRef(null);
+  const userScrolledUp = useRef(false);
 
   const userName = localStorage.getItem('user_name') || 'Student';
   const [greeting, setGreeting] = useState(() => {
@@ -284,11 +286,13 @@ const AITutor = () => {
     }
   }, []);
 
+  // Only auto-scroll once when a NEW question is submitted. 
+  // During generation, the user has 100% freedom to scroll wherever they want.
   useEffect(() => {
-    if (messages.length > 0) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (feedRef.current) {
+      feedRef.current.scrollTop = feedRef.current.scrollHeight;
     }
-  }, [messages, loading]);
+  }, [messages.length]);
 
   const handleSubmit = async () => {
     const q = question.trim();
@@ -459,7 +463,7 @@ const AITutor = () => {
       {hasMessages && (
         <div className="messages-feed-wrapper">
 
-          <div className="messages-feed">
+          <div className="messages-feed" ref={feedRef}>
             {messages.map((msg, i) => (
               <ResponseCard
                 key={msg.id || i}
@@ -470,12 +474,6 @@ const AITutor = () => {
                 }}
               />
             ))}
-            {loading && (
-              <div className="loading-card fade-in">
-                <Loader2 size={18} className="spin" />
-                <span>Generating your VTU model answer…</span>
-              </div>
-            )}
             {error && (
               <div className="error-card fade-in">
                 <AlertCircle size={18} />
